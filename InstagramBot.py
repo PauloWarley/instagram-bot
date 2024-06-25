@@ -78,14 +78,18 @@ class CommonsImazit():
                 elements = driver.find_elements(By.XPATH, xpath)
                 if (len(elements)>0):
                     loaded = True
+                    print("elements case")
             except:
                 loaded = False
+                print("except case")
                 
-            verify_time = (last_time - time.time()) <= timeout
+            verify_time = ( time.time() - last_time) >= timeout
+            # print(last_time - time.time())
             if (verify_time):
+                print("time case")
                 return False
                 
-            
+        return loaded
 
 class InstagramBot():
     
@@ -93,8 +97,15 @@ class InstagramBot():
         cm = CommonsImazit()
         self.wait_load = cm.wait_load
         self.url= "https://www.instagram.com"
-        
-        service = Service(ChromeDriverManager().install())
+        # BANCO DE DADOS
+        self._file_db = "./database.xlsx"
+        try:
+            self.df = pd.read_excel(self._file_db)
+        except:
+            self.df = pd.DataFrame()
+            self.df.to_excel(self._file_db, engine='xlsxwriter', index=0)
+    
+    
         self.options = webdriver.ChromeOptions()
 
         # options.add_experimental_option('--excludeSwitches', ['disable-logging'])
@@ -103,18 +114,14 @@ class InstagramBot():
         self.options.add_argument('--ignore-ssl-errors')
         self.options.add_argument('--ignore-certificate-errors-spki-list')
         self.options.add_argument("--start-maximized")
-        
-        # BANCO DE DADOS
-        self._file_db = "./database.xlsx"
-        try:
-            self.df = pd.read_excel(self._file_db)
-        except:
-            self.df = pd.DataFrame()
-            self.df.to_excel(self._file_db, engine='xlsxwriter', index=0)
+    def start_webdriver(self, userdata):
+        service = Service(ChromeDriverManager().install())
         
         # self.options.add_argument("--window-position=2000,0")
         # self.options.add_argument("--window-size=1920,1080")
         # self.options.add_argument("--headless")
+        
+        self.options.add_argument(userdata)
         
         self.driver = webdriver.Chrome(options=self.options, service=service)
         
@@ -145,24 +152,25 @@ class InstagramBot():
         
 
     def run_login(self) -> bool:
-        _uuid = uuid.uuid4()
         
+        _uuid = uuid.uuid4()
         is_user_in_db = self.find_user_in_db(self.login)
-        if (is_user_in_db == None):
+        print(is_user_in_db)
+        if (is_user_in_db != None):
             _uuid = self.find_user_in_db(self.login)
         
-        self.options.add_argument(f'--user-data-dir={os.getcwd()}/userdata/{_uuid}')
+        self.start_webdriver(userdata = f'--user-data-dir={os.getcwd()}/userdata/{_uuid}')
         
         def is_logged() -> bool:
-            self.wait_load(".//svg[@aria-label = 'Instagram']", self.driver, 5)
-            return True
+            if self.wait_load(".//*[local-name() ='svg' and @aria-label = 'Instagram']", self.driver, 10) == True:
+                return True
 
         self.driver.get(self.url)
         
-        is_loaded = self.wait_load(".//input[@name = 'username']", self.driver, 5)
-        if(not is_loaded):
-            print("Situação de login:", is_logged())
-            return True
+        if (is_logged()):
+            return
+        
+        self.wait_load(".//input[@name = 'username']", self.driver, 60)
         
         username = self.driver.find_element(By.XPATH, ".//input[@name = 'username']")
         username.send_keys(self.login)
@@ -176,7 +184,7 @@ class InstagramBot():
         print("Situação de login:", is_logged())
         
         if (is_user_in_db == None):
-            self.save_user_in_db()
+            self.save_user_in_db(uuid=_uuid)
         
         return True
     
@@ -187,10 +195,9 @@ class InstagramBot():
         else:
             return filtered["uuid"].iloc[0]
     
-    def save_user_in_db(self):
+    def save_user_in_db(self, uuid: str):
         # SAVE THE UUID
-        _uuid = uuid.uuid4()
-        new_df = pd.DataFrame(columns=["login", "uuid"], data=[[self.login, _uuid]])
+        new_df = pd.DataFrame(columns=["login", "uuid"], data=[[self.login, uuid]])
         self.df = pd.concat([self.df, new_df])
         os.remove(self._file_db)
         self.df.to_excel(self._file_db, sheet_name='users', index=0)
