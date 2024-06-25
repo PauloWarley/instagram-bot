@@ -24,52 +24,7 @@ class CommonsImazit():
     # //*[local-name() = 'svg']
     # //*[local-name() = 'svg']/ancestor::div
     # //*[local-name() = 'svg']/div::div
-    def test(self):
-        self.options = webdriver.ChromeOptions()
-        self.options.add_argument("--disable-extensions")
-        self.options.add_argument("--disable-gpu")
-        self.options.add_argument("--log-level=3")
-        self.options.add_argument("--remote-debugging-port=9222")
-        self.options.add_argument("--disable-browser-side-navigation")
-        self.options. add_argument("--blink-settings=imagesEnabled=false")
-        self.options.add_argument("--disable-infobars")
-        self.options.add_argument("--no-first-run")
-        self.options.add_argument("--no-sandbox")
-        self.options.add_argument("--headless")
-        self.options.add_argument("--disable-dev-shm-usage")
-        self.options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        self.options.add_experimental_option('useAutomationExtension', False)
-        self.options.add_argument("--disable-blink-features=AutomationControlled")
-        self.options.add_argument(
-            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.6478.62 Safari/537.36')
-        self.options.page_load_strategy = 'normal'
 
-        # Add realistic browser preferences
-        prefs = {
-            "download.default_directory": "Downloads",
-            "intl.accept_languages": "en-US,en;q=0.9",
-            "credentials_enable_service": False,
-            "profile.password_manager_enabled": False,
-        }
-        self.options.add_experimental_option("prefs", prefs)
-
-        # Disable browser notifications
-        self.options.add_argument("--disable-notifications")
-
-        # Disable browser password saving
-        self.options.add_argument('--no-service-autorun')
-        self.options.add_argument('--password-store=basic')
-
-        # self.driver.execute_script("window.open('https://restorecord.com/');")
-        self.driver.get("https://restorecord.com/")
-        input()
-        self.driver.save_screenshot("print.png")
-
-        time.sleep(600)
-
-        # self.driver.switch_to.window(self.driver.window_handles[-1])
-        
-        
     def wait_load(self, xpath, driver, timeout = 5*60):
         loaded = False
         last_time = time.time()
