@@ -22,6 +22,7 @@ def create_like():
     if request.method == 'POST':
         body = request.get_json()
         
+        login: list = body["login"]
         usernames: list = body["usernames"]
         resp_json: str = json.dumps({
             "message": "Processo de curtir fotos iniciado.",

@@ -202,8 +202,17 @@ class InstagramBot():
         os.remove(self._file_db)
         self.df.to_excel(self._file_db, sheet_name='users', index=0)
     
-    def run_likes(self,  username: str):
-        # //div/img[1]
+    def run_likes(self, login: str,  username: str):
+        _uuid = uuid.uuid4()
+        is_user_in_db = self.find_user_in_db(login)
+        if (is_user_in_db != None):
+            _uuid = self.find_user_in_db(login)
+            self.start_webdriver(userdata = f'--user-data-dir={os.getcwd()}/userdata/{_uuid}')
+        else:
+            return {
+                "status": "User are not authenticated."
+            }
+            
         self.driver.get(f"{self.url}/{username}")
 
         self.wait_load(".//div/div/img", self.driver, 5)
@@ -229,7 +238,7 @@ class InstagramBot():
                 self.actions.move_to_element(like_button).perform()
                 like_button.click()
                 
-                self.wait_load(".//*[local-name() = 'svg' and @aria-label='Unlike']/parent::*/parent::*/parent::*", self.driver)
+                self.wait_load(".//button/parent::div/span//*[local-name() = 'svg' and @aria-label='Unlike']/parent::*/parent::*/parent::*", self.driver)
                 
                 log[username].append({
                     "post": post,
@@ -240,7 +249,7 @@ class InstagramBot():
                 
             except:
                 try:
-                    unlike_button = self.driver.find_element(By.XPATH, "//*[local-name() = 'svg' and @aria-label='Unlike']/parent::*/parent::*/parent::*")
+                    unlike_button = self.driver.find_element(By.XPATH, ".//button/parent::div/span//*[local-name() = 'svg' and @aria-label='Unlike']/parent::*/parent::*/parent::*")
                     if (len(unlike_button) > 0):
                         log[username].append({
                             "post": post,
