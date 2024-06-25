@@ -119,7 +119,7 @@ class InstagramBot():
         
         # self.options.add_argument("--window-position=2000,0")
         # self.options.add_argument("--window-size=1920,1080")
-        # self.options.add_argument("--headless")
+        self.options.add_argument("--headless")
         
         self.options.add_argument(userdata)
         
@@ -168,7 +168,7 @@ class InstagramBot():
         self.driver.get(self.url)
         
         if (is_logged()):
-            return
+            return self.driver.quit()
         
         self.wait_load(".//input[@name = 'username']", self.driver, 60)
         
@@ -186,7 +186,7 @@ class InstagramBot():
         if (is_user_in_db == None):
             self.save_user_in_db(uuid=_uuid)
         
-        return True
+        return self.driver.quit()
     
     def find_user_in_db(self, login):
         filtered = self.df.query("login == @login")
@@ -230,7 +230,7 @@ class InstagramBot():
         for post in post_links:
             self.driver.get(post)
             
-            self.wait_load(".//button/parent::div/span//*[local-name() = 'svg' and @aria-label='Like']/parent::*/parent::*/parent::*", self.driver)
+            self.wait_load(".//button/parent::div/span//*[local-name() = 'svg' and @aria-label='Like']/parent::*/parent::*/parent::*", self.driver,)
             try:
                 time.sleep(5)
                 
@@ -260,7 +260,8 @@ class InstagramBot():
                         "post": post,
                         "status": "Error"
                     })
-                    
+        self.driver.quit()
+         
         with open("log.json", "w") as f:
             f.write(json.dumps(log))
             

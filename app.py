@@ -34,7 +34,7 @@ def create_like():
         def on_close():
             results:list = []
             for username in usernames:
-                result = igg.run_likes(username)
+                result = igg.run_likes(login=login, username=username)
                 results.append(result)
             print(results)
             requests.post(WEBHOOK, {"results": results})
