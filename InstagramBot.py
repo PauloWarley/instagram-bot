@@ -15,8 +15,6 @@ from selenium_stealth import stealth
 import pandas as pd
 
 from selenium.webdriver.chrome.service import Service
-from time import sleep
-from lxml import html
 import os
 
 class CommonsImazit():
