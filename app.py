@@ -5,14 +5,6 @@ import json
 
 igg = InstagramBot()
 
-# igg.set_login("imazit.lp", "@ImazitB1")
-
-# igg.run_login()
-
-# igg.run_likes("imazit.lp")
-# igg.run_likes("paulowarley1")
-# igg.run_likes("cantorapolianareis")
-
 app = Flask(__name__)
 
 WEBHOOK = "http://localhost:5000/webhook"
