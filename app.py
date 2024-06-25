@@ -3,6 +3,8 @@ from flask import Flask, request, Response
 import requests
 import json
 
+_api_key = "564c755e-d24f-41c3-9532-eccd8e061469"
+
 igg = InstagramBot()
 
 app = Flask(__name__)
@@ -11,6 +13,10 @@ WEBHOOK = "http://localhost:5000/webhook"
 
 @app.route('/create-like', methods=['POST'])
 def create_like():
+    if ( _api_key not in request.headers.get("Authorization")):
+        response = Response(json.dumps({"message": "User unauthorized."}), status=401, content_type="application/json")
+        return response
+    
     if request.method == 'POST':
         body = request.get_json()
         
@@ -38,6 +44,10 @@ def create_like():
 # PODE RETORNAR UM UUID REFERENTE AO USER_DATA DO USUÁRIO E SALVAR NO EXCEL
 @app.route('/create-login', methods=['POST'])
 def create_login():
+    if ( _api_key not in request.headers.get("Authorization")):
+        response = Response(json.dumps({"message": "User unauthorized."}), status=401, content_type="application/json")
+        return response
+    
     if request.method == 'POST':
         body = request.get_json()
         
@@ -67,6 +77,10 @@ def webhook():
 
 @app.route('/get-accounts', methods=['GET'])
 def get_accounts():
+    if ( _api_key not in request.headers.get("Authorization")):
+        response = Response(json.dumps({"message": "User unauthorized."}), status=401, content_type="application/json")
+        return response
+    
     result = igg.get_accounts()
     return result
 
