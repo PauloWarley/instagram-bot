@@ -73,4 +73,9 @@ def webhook():
     print(request.get_json())
     return {}
 
+@app.route('/get-accounts', methods=['GET'])
+def get_accounts():
+    result = igg.get_accounts()
+    return result
+
 app.run()

@@ -267,7 +267,11 @@ class InstagramBot():
             
         return log
 
-# igg = InstagramBot()
+    def get_accounts(self):
+        return self.df.to_dict("records")
+    
+igg = InstagramBot()
+igg.get_accounts()
 
 # igg.set_login("", "")
 
