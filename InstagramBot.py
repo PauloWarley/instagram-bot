@@ -147,7 +147,9 @@ class InstagramBot():
     def run_login(self) -> bool:
         _uuid = uuid.uuid4()
         
-        self.find_user_in_db(self.login)
+        is_user_in_db = self.find_user_in_db(self.login)
+        if (is_user_in_db == None):
+            _uuid = self.find_user_in_db(self.login)
         
         self.options.add_argument(f'--user-data-dir={os.getcwd()}/userdata/{_uuid}')
         
@@ -173,7 +175,8 @@ class InstagramBot():
         
         print("Situação de login:", is_logged())
         
-        self.save_user_on_db()
+        if (is_user_in_db == None):
+            self.save_user_in_db()
         
         return True
     
@@ -254,5 +257,3 @@ class InstagramBot():
 # igg.run_login()
 
 # igg.run_likes("imazit.lp")
-# igg.run_likes("paulowarley1")
-# igg.run_likes("cantorapolianareis")
