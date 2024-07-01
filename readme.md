@@ -25,3 +25,13 @@ curl --location 'http://localhost:5000/create-like' \
 # get accounts
 curl --location 'http://localhost:5000/get-accounts'\
 --header 'Authorization: "564c755e-d24f-41c3-9532-eccd8e061469"' 
+
+
+# double-auth-code
+curl --location 'http://localhost:5000/double-auth' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: ••••••' \
+--data '{
+    "login": "login",
+    "code": "code_value"
+}'

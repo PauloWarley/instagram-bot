@@ -72,7 +72,7 @@ class InstagramBot():
         
         # self.options.add_argument("--window-position=2000,0")
         # self.options.add_argument("--window-size=1920,1080")
-        self.options.add_argument("--headless")
+        # self.options.add_argument("--headless")
         
         self.options.add_argument(userdata)
         
@@ -104,7 +104,7 @@ class InstagramBot():
         self.password = password
         
 
-    def run_login(self) -> bool:
+    def run_login(self, double_auth_callback= lambda x: x) -> bool:
         
         _uuid = uuid.uuid4()
         is_user_in_db = self.find_user_in_db(self.login)
@@ -117,6 +117,40 @@ class InstagramBot():
         def is_logged() -> bool:
             if self.wait_load(".//*[local-name() ='svg' and @aria-label = 'Instagram']", self.driver, 10) == True:
                 return True
+            
+        def is_double_auth() -> bool:
+            xpath_input_code = ".//input[@aria-describedby='verificationCodeDescription']"
+            if self.wait_load(xpath_input_code, self.driver, 60) == True:
+                print("is_double_auth")
+                double_auth_callback(self.login)
+                # return True
+                while True:
+                    try:
+                        f = open("./double_auth.json", "r")
+                        codes = json.loads(f.read())
+                        
+                        for code in codes:
+                            print(code["login"] , self.login , code["used"])
+                            if code["login"] == self.login and code["used"] == False:
+                                
+                                print(code["code"])
+                                input_code = self.driver.find_element(By.XPATH, xpath_input_code)
+                                input_code.send_keys(code["code"])
+                                input_code.send_keys(Keys.ENTER)
+                                
+                                code["used"] = True
+                                break
+                                
+                                
+                        f.close()
+                        
+                        f = open("./double_auth.json", "w")
+                        f.write(json.dumps(codes))
+                        f.close()
+                        
+                    except Exception as e:
+                        print(e)
+                        pass
 
         self.driver.get(self.url)
         
@@ -133,6 +167,10 @@ class InstagramBot():
         
         login = self.driver.find_element(By.XPATH, ".//div//button[@type = 'submit']")
         login.click()
+        
+        if(is_double_auth()):
+            print("Situação de dupla autenticação:", True)
+            
         
         print("Situação de login:", is_logged())
         

@@ -61,8 +61,15 @@ def create_login():
         response = Response(resp_json, status=201, content_type="application/json")
         
         def on_close():
+            def double_auth_callback(login= username):
+                requests.post(WEBHOOK, {
+                    "login": username, 
+                    "message": "Post the double authetication code.", 
+                    "route": "/double-auth"
+                })
+
             result = igg.set_login(username, password)
-            igg.run_login()
+            igg.run_login(double_auth_callback=double_auth_callback)
             
             requests.post(WEBHOOK, {"result": result})
                 
@@ -83,5 +90,44 @@ def get_accounts():
     
     result = igg.get_accounts()
     return result
+
+@app.route('/double-auth', methods=['POST'])
+def double_auth():
+    if ( _api_key not in request.headers.get("Authorization")):
+        response = Response(json.dumps({"message": "User unauthorized."}), status=401, content_type="application/json")
+        return response
+    
+    body = request.get_json()
+    login: str = body["login"]
+    code: str = body["code"]
+    
+    codes = []
+    try:
+        f = open("./double_auth.json", "r")
+        codes = json.loads(f.read())
+        f.close()
+    except:
+        f = open("./double_auth.json", "w")
+        f.write("[]")
+        f.close()
+        
+    codes.append({
+        "login": login,
+        "code": code,
+        "used": False
+    })
+    
+    f = open("./double_auth.json", "w")
+    f.write(json.dumps(codes))
+    f.close()
+
+    resp_json: str = json.dumps({
+        "message": "Code registered.",
+        "login": login,
+        "webhook": WEBHOOK
+    })
+    
+    response = Response(resp_json, status=201, content_type="application/json")
+    return response
 
 app.run()
