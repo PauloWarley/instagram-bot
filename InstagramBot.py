@@ -58,7 +58,6 @@ class InstagramBot():
             self.df = pd.DataFrame()
             self.df.to_excel(self._file_db, engine='xlsxwriter', index=0)
     
-    
         self.options = webdriver.ChromeOptions()
 
         # options.add_experimental_option('--excludeSwitches', ['disable-logging'])
@@ -79,7 +78,6 @@ class InstagramBot():
         self.driver = webdriver.Chrome(options=self.options, service=service)
         
         self.actions = ActionChains(self.driver)
-
 
         stealth(self.driver,
             languages=["en-US", "en"],
