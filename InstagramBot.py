@@ -139,14 +139,18 @@ class InstagramBot():
                                 input_code.send_keys(Keys.ENTER)
                                 
                                 code["used"] = True
-                                break
                                 
                                 
-                        f.close()
+                                f.close()
                         
-                        f = open("./double_auth.json", "w")
-                        f.write(json.dumps(codes))
-                        f.close()
+                                f = open("./double_auth.json", "w")
+                                f.write(json.dumps(codes))
+                                f.close()
+                                
+                                return True
+                                
+                                
+                      
                         
                     except Exception as e:
                         print(e)
