@@ -1,6 +1,11 @@
 Para executar use: 
 python app.py
 
+ou via docker
+
+docker build -t instagram_bot .
+docker run -it --rm -p 5000:5000 instagram_bot
+
 
 <!-- API -->
 
