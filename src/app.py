@@ -2,18 +2,19 @@ from InstagramBot import InstagramBot
 from flask import Flask, request, Response
 import requests
 import json
+import os
 
-_api_key = "564c755e-d24f-41c3-9532-eccd8e061469"
 
 igg = InstagramBot()
 
 app = Flask(__name__)
 
-WEBHOOK = "http://localhost:5000/webhook"
+APIKEY = os.environ.get("APIKEY", "564c755e-d24f-41c3-9532-eccd8e061469")
+WEBHOOK = os.environ.get("WEBHOOK", "http://localhost:5000/webhook")
 
 @app.route('/create-like', methods=['POST'])
 def create_like():
-    if ( _api_key not in request.headers.get("Authorization")):
+    if ( APIKEY not in request.headers.get("Authorization")):
         response = Response(json.dumps({"message": "User unauthorized."}), status=401, content_type="application/json")
         return response
     
@@ -44,7 +45,7 @@ def create_like():
 # PODE RETORNAR UM UUID REFERENTE AO USER_DATA DO USUÁRIO E SALVAR NO EXCEL
 @app.route('/create-login', methods=['POST'])
 def create_login():
-    if ( _api_key not in request.headers.get("Authorization")):
+    if ( APIKEY not in request.headers.get("Authorization")):
         response = Response(json.dumps({"message": "User unauthorized."}), status=401, content_type="application/json")
         return response
     
@@ -62,17 +63,31 @@ def create_login():
         response = Response(resp_json, status=201, content_type="application/json")
         
         def on_close():
-            def double_auth_callback(login= username):
-                requests.post(WEBHOOK, {
-                    "login": username, 
+            def double_auth_callback(login= username, codeDescription=''):
+                requests.post(WEBHOOK, json=json.dumps({
+                    "login": username,
+                    "codeDescription": codeDescription,
                     "message": "Post the double authetication code.", 
                     "route": "/double-auth"
-                })
+                }))
 
-            result = igg.set_login(username, password)
-            igg.run_login(double_auth_callback=double_auth_callback)
+            igg.set_login(username, password)
+            login = igg.run_login(double_auth_callback=double_auth_callback) 
             
-            requests.post(WEBHOOK, {"result": result})
+            if (login == False):
+                requests.post(WEBHOOK, json=json.dumps({
+                    "login": "username",
+                    "message": "User are not registered.",
+                    "route": "/create-login"
+                }))
+                
+            else:
+                requests.post(WEBHOOK, json=json.dumps({
+                    "login": username,
+                    "message": "Login completed.", 
+                    "route": "/create-login"
+                }))
+                
                 
         response.call_on_close(on_close)
         
@@ -81,20 +96,20 @@ def create_login():
 @app.route('/webhook', methods=['POST'])
 def webhook():
     print(request.get_json())
-    return {}
+    return request.get_json()
 
-@app.route('/get-accounts', methods=['GET'])
-def get_accounts():
-    if ( _api_key not in request.headers.get("Authorization")):
-        response = Response(json.dumps({"message": "User unauthorized."}), status=401, content_type="application/json")
-        return response
+# @app.route('/get-accounts', methods=['GET'])
+# def get_accounts():
+#     if ( APIKEY not in request.headers.get("Authorization")):
+#         response = Response(json.dumps({"message": "User unauthorized."}), status=401, content_type="application/json")
+#         return response
     
-    result = igg.get_accounts()
-    return result
+#     result = igg.get_accounts()
+#     return result
 
 @app.route('/double-auth', methods=['POST'])
 def double_auth():
-    if ( _api_key not in request.headers.get("Authorization")):
+    if ( APIKEY not in request.headers.get("Authorization")):
         response = Response(json.dumps({"message": "User unauthorized."}), status=401, content_type="application/json")
         return response
     
@@ -102,25 +117,7 @@ def double_auth():
     login: str = body["login"]
     code: str = body["code"]
     
-    codes = []
-    try:
-        f = open("./double_auth.json", "r")
-        codes = json.loads(f.read())
-        f.close()
-    except:
-        f = open("./double_auth.json", "w")
-        f.write("[]")
-        f.close()
-        
-    codes.append({
-        "login": login,
-        "code": code,
-        "used": False
-    })
-    
-    f = open("./double_auth.json", "w")
-    f.write(json.dumps(codes))
-    f.close()
+    igg.save_user_in_db(login=login, code=code)
 
     resp_json: str = json.dumps({
         "message": "Code registered.",
@@ -131,4 +128,4 @@ def double_auth():
     response = Response(resp_json, status=201, content_type="application/json")
     return response
 
-app.run()
+app.run(host='0.0.0.0', port=5000)

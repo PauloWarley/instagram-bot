@@ -1,0 +1,8 @@
+selenium
+webdriver_manager
+openpyxl
+selenium_stealth
+flask
+requests
+pandas
+pymongo
